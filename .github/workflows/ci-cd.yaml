@@ -1,52 +1,41 @@
-name: CI/CD to EKS
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 env:
+  ECR_REPOSITORY_URL: ${{ secrets.ECR_REPOSITORY_URL }}
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: my-app
-  EKS_CLUSTER_NAME: my-eks-cluster
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image
-        run: |
-          docker build -t $ECR_REPOSITORY:latest ./app
+    - name: Build and push Docker image
+      run: |
+        docker build -t $ECR_REPOSITORY_URL:latest ./app
+        docker push $ECR_REPOSITORY_URL:latest
 
-      - name: Tag Docker image
-        run: |
-          docker tag $ECR_REPOSITORY:latest \
-          094822715110.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest
-
-      - name: Push Docker image to ECR
-        run: |
-          docker push 094822715110.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --region $AWS_REGION \
-            --name $EKS_CLUSTER_NAME
-
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl apply -f k8s/
+    - name: Update kubeconfig and deploy
+      run: |
+        aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
+        kubectl apply -f k8s/
+        kubectl set image deployment/my-app my-app=$ECR_REPOSITORY_URL:latest
+        kubectl rollout status deployment/my-app
