@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 env:
   AWS_REGION: us-east-1
@@ -16,45 +14,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout repo
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # Step 2: Configure AWS credentials
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-    # Step 3: Login to Amazon ECR
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-    # Step 4: Build and push Docker image
-    - name: Build and push Docker image
-      run: |
-        docker build -t $ECR_REPOSITORY_URL:latest ./app
-        docker push $ECR_REPOSITORY_URL:latest
+      - name: Build and push Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY_URL:latest ./app
+          docker push $ECR_REPOSITORY_URL:latest
 
-    # Step 5: Update kubeconfig for EKS
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig \
-          --region $AWS_REGION \
-          --name $EKS_CLUSTER_NAME \
-          --alias my-cluster
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name $EKS_CLUSTER_NAME
 
-    # Step 6: Debug (optional, remove once working)
-    - name: Check cluster
-      run: |
-        kubectl config get-contexts
-        kubectl get nodes
-
-    # Step 7: Deploy to Kubernetes
-    - name: Deploy to EKS
-      run: |
-        kubectl apply -f k8s/ --validate=false
-        kubectl set image deployment/my-app my-app=$ECR_REPOSITORY_URL:latest
-        kubectl rollout status deployment/my-app
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/my-app
