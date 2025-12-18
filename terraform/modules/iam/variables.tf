@@ -1,0 +1,14 @@
+variable "cluster_role_name" {
+  type        = string
+  description = "Name of the EKS cluster IAM role"
+}
+
+variable "node_role_name" {
+  type        = string
+  description = "Name of the EKS node IAM role"
+}
+
+variable "environment" {
+  type        = string
+  description = "Environment name"
+}
