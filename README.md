@@ -14,42 +14,42 @@ This project demonstrates a complete **CI/CD pipeline** for deploying a containe
 
 ## Architecture (Textual Diagram)
 
-         +--------------------+
-         |  GitHub Repository |
-         +---------+----------+
-                   |
-                   | Push to main branch
-                   v
-         +--------------------+
-         |  GitHub Actions    |
-         |  CI/CD Workflow    |
-         +---------+----------+
-                   |
-                   | Build & push Docker image
-                   v
-         +--------------------+
-         |  Amazon ECR        |
-         +---------+----------+
-                   |
-                   | Pull Docker image
-                   v
-         +--------------------+
-         |  AWS EKS Cluster   |
-         |  (Kubernetes)     |
-         +---------+----------+
-                   |
-        +----------+-----------+
-        |                      |
-+----------------+      +----------------+
-| Deployment     |      | Service        |
-| (my-app)       |      | LoadBalancer   |
-+----------------+      +----------------+
-        |
+         
++--------------------+
+     |  GitHub Repository |
+     +---------+----------+
+               |
+               | Push to main branch
+               v
+     +--------------------+
+     |  GitHub Actions    |
+     |  CI/CD Workflow    |
+     +---------+----------+
+               |
+               | Build & push Docker image
+               v
+     +--------------------+
+     |  Amazon ECR        |
+     +---------+----------+
+               |
+               | Pull Docker image
+               v
+     +--------------------+
+     |  AWS EKS Cluster   |
+     |  (Kubernetes)     |
+     +---------+----------+
+               |
+    +----------+-----------+
+    |                      |
++----------------+ +----------------+
+| Deployment | | Service |
+| (my-app) | | LoadBalancer |
++----------------+ +----------------+
+|
 +----------------+
-| Ingress        |
-| (optional)     |
+| Ingress |
+| (optional) |
 +----------------+
-
 
 ---
 
@@ -88,20 +88,23 @@ This project demonstrates a complete **CI/CD pipeline** for deploying a containe
 git clone https://github.com/ChisomNnaji/AWS-k8s-CICD-DevOps.git
 cd AWS-k8s-CICD-DevOps
 
-2. **Terraform Deployment:**
+2. Terraform Deployment:
+
 cd terraform
 terraform init
 terraform plan
 terraform apply
 
-3. **Build and Push Docker Image, Optional if using CI/CD:**
+3. Build and Push Docker Image (Optional if using CI/CD):
+
 cd ../app
 docker build -t my-app:1.0 .
 docker tag my-app:1.0 <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
 docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
 
-4. **Kubernetes Deployment**
-(Optional if using CI/CD):
+
+4. Kubernetes Deployment (Optional if using CI/CD):
+
 kubectl apply -f ../k8s/
 kubectl rollout status deployment/my-app
 
