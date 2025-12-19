@@ -1,122 +1,129 @@
-# AWS Kubernetes CI/CD Project
-
-**Author:** Chisom Nnaji  
-**LinkedIn:** [linkedin.com/in/chisom-nnaji-9a6304231](https://linkedin.com/in/chisom-nnaji-9a6304231)  
-**Project Type:** AWS EKS, Kubernetes, Docker, GitHub Actions CI/CD  
-
----
+# AWS EKS CI/CD DevOps Project
 
 ## Project Overview
 
 This project demonstrates a complete **CI/CD pipeline** for deploying a containerized web application to **AWS EKS** using **Docker**, **Terraform**, and **GitHub Actions**. The pipeline automates the build, push, and deployment processes while following best practices in security and infrastructure management.
 
----
-
-## Architecture (Textual Diagram)
-
-         
-+--------------------+
-     |  GitHub Repository |
-     +---------+----------+
-               |
-               | Push to main branch
-               v
-     +--------------------+
-     |  GitHub Actions    |
-     |  CI/CD Workflow    |
-     +---------+----------+
-               |
-               | Build & push Docker image
-               v
-     +--------------------+
-     |  Amazon ECR        |
-     +---------+----------+
-               |
-               | Pull Docker image
-               v
-     +--------------------+
-     |  AWS EKS Cluster   |
-     |  (Kubernetes)     |
-     +---------+----------+
-               |
-    +----------+-----------+
-    |                      |
-+----------------+ +----------------+
-| Deployment | | Service |
-| (my-app) | | LoadBalancer |
-+----------------+ +----------------+
-|
-+----------------+
-| Ingress |
-| (optional) |
-+----------------+
 
 ---
 
-## Tools & Services Used
+## What This Project Does
 
-- **AWS Services:** EKS, ECR, IAM, VPC, Security Groups, S3, Secrets Manager, CloudWatch  
-- **Infrastructure as Code:** Terraform  
-- **Containerization:** Docker  
-- **CI/CD:** GitHub Actions  
-- **Kubernetes Objects:** Deployment, Service, Ingress  
+- Provisions AWS infrastructure using Terraform (modular setup)
+- Builds and pushes Docker images to Amazon ECR
+- Deploys applications to AWS EKS (Kubernetes)
+- Automates deployments using GitHub Actions
+- Exposes the application via AWS LoadBalancer
+- Secures access using IAM and AWS Secrets
+
+---
+
+## Architecture (Textual Overview)
+
+Developer pushes code to GitHub  
+↓  
+GitHub Actions pipeline runs  
+↓  
+Docker image is built and pushed to Amazon ECR  
+↓  
+Kubernetes pulls the image from ECR  
+↓  
+Application is deployed to AWS EKS  
+↓  
+Traffic reaches the app through a LoadBalancer  
+
+---
+
+## Tech Stack
+
+**Cloud & Infrastructure**
+- AWS (EKS, ECR, IAM, VPC, CloudWatch, S3, Secrets Manager)
+- Terraform (Infrastructure as Code)
+
+**Containers & Orchestration**
+- Docker
+- Kubernetes
+
+**CI/CD**
+- GitHub Actions
+
+**Application**
+- Nginx
+- Static HTML
+
+---
+
+## Project Structure
+
+```
+app/        → Dockerfile and application files  
+k8s/        → Kubernetes manifests  
+terraform/  → Modular Terraform infrastructure  
+README.md   → Project documentation  
+```
 
 ---
 
 ## CI/CD Flow
 
-1. **Code Commit:** Push changes to the `main` branch on GitHub.  
-2. **GitHub Actions:** Trigger workflow to build Docker image.  
-3. **ECR Push:** Docker image is pushed to Amazon ECR repository.  
-4. **EKS Deployment:** Workflow updates Kubernetes manifests and applies them to the EKS cluster.  
-5. **Verification:** Deployment rollout is monitored; any failures are flagged in GitHub Actions.  
+1. Code is pushed to the `main` branch  
+2. GitHub Actions pipeline starts  
+3. AWS credentials are loaded from GitHub Secrets  
+4. Docker image is built  
+5. Image is pushed to Amazon ECR  
+6. Kubernetes manifests are applied to EKS  
+7. Rolling deployment updates pods  
 
 ---
 
 ## Security Decisions
 
-- **IAM Roles:** Separate roles for EKS nodes and GitHub Actions with least privilege.  
-- **Secrets Management:** AWS Secrets Manager for sensitive information (EKS cluster name, AWS credentials).  
-- **ECR Authentication:** GitHub Actions logs into ECR using IAM credentials.  
+- IAM roles instead of hardcoded credentials
+- GitHub Secrets for sensitive values
+- Controlled EKS access via aws-auth ConfigMap
+- Terraform state excluded from Git
 
 ---
 
-## How to Reproduce
+## How to Run This Project
 
-1. **Clone the repository:**
-```bash
-git clone https://github.com/ChisomNnaji/AWS-k8s-CICD-DevOps.git
-cd AWS-k8s-CICD-DevOps
+### Infrastructure Setup
 
-2. Terraform Deployment:
-
+```
 cd terraform
 terraform init
 terraform plan
 terraform apply
+```
 
-3. Build and Push Docker Image (Optional if using CI/CD):
+### Application Build (Optional)
 
-cd ../app
+```
+cd app
 docker build -t my-app:1.0 .
 docker tag my-app:1.0 <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
 docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
+```
 
+### Kubernetes Deployment (Optional)
 
-4. Kubernetes Deployment (Optional if using CI/CD):
-
-kubectl apply -f ../k8s/
+```
+kubectl apply -f k8s/
 kubectl rollout status deployment/my-app
+```
 
-Expected Outcome
+---
 
-A running web application accessible via the LoadBalancer URL.
+## Expected Outcome
 
-Application displays custom HTML page confirming CI/CD deployment.
+- Application running on AWS EKS
+- Accessible via LoadBalancer URL
+- CI/CD deploys automatically on every commit
 
-Full automation of future commits via GitHub Actions.
+---
 
-Contact & Portfolio
+## Author
 
-Chisom Nnaji
-LinkedIn: linkedin.com/in/chisom-nnaji-9a6304231
+**Chisom James Nnaji**  
+LinkedIn: https://linkedin.com/in/chisom-nnaji-9a6304231  
+GitHub: https://github.com/ChisomNnaji  
